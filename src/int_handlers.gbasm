@@ -4,6 +4,7 @@ include "interrupts.inc"
 section "int_handlers", ROM0
     vblank_int_handler::
         set_last_interrupt IEB_VBLANK
+        call gfx_oam_dma_transfer		; copying sprite attributes from RAM to VRAM
         ret
 
     stat_int_handler::

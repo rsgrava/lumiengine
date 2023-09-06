@@ -1,0 +1,28 @@
+include "hardware.inc"
+include "interrupts.inc"
+
+section "graphics", romx
+
+    ;routine that waits until vblank happens to proceed
+    ;meant to be called every frame
+    gfx_wait_for_vblank::
+    .wait:
+        halt                            ; suspending CPU until next interrupt
+        check_last_interrupt IEB_VBLANK ; verifying whether interrupt was caused by VBLANK
+        jr nz, .wait                    ; if it wasn't, wait
+        ret
+
+    ;routine that copies the sprite attribute table from RAM to VRAM
+    ;this is meant to get called every frame (ideally, call it from vblank interrupt handler)
+    ;then if we want to change sprite attributes, we should write to the oam_data table in RAM
+    gfx_oam_dma_transfer::
+        ld a, $C0          ; loading high byte of the oam table address in ram
+        ldh [rDMA], a      ; starting DMA transfer
+        ld a, 40           ; waiting until transfer finishes (160 cycles)
+    .wait:
+        dec a              ; 1 cycle
+        jr nz, .wait       ; 3 cycles
+        ret
+
+section "oam_data", wram0[$C000], align[8]
+    oam_data:: ds $FF
