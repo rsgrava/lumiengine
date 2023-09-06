@@ -21,17 +21,19 @@ SRC := $(wildcard $(SRC_DIR)/*.gbasm) $(wildcard $(SRC_DIR)/*/*.gbasm) $(wildcar
 OBJ := $(patsubst $(SRC_DIR)/%.gbasm, $(TEMP_DIR)/%.o, $(SRC))
 TEMP_DIR_TREE := $(dir $(OBJ))
 
-default: setup assemble fix clean
+default: setup assemble link fix clean
 
 setup:
 	mkdir -p $(TEMP_DIR_TREE)
 	mkdir -p $(OUT_DIR)
 
 assemble: $(OBJ)
-	$(LINKER) $(LINKER_FLAGS) -o $(OUT_DIR)/$(TARGET) $^
 
 $(TEMP_DIR)/%.o: $(SRC_DIR)/%.gbasm
 	$(ASSEMBLER) $(ASSEMBLER_FLAGS) -o $@ $<
+
+link:
+	$(LINKER) $(LINKER_FLAGS) -o $(OUT_DIR)/$(TARGET) $(OBJ)
 
 fix:
 	$(FIXER) $(FIXER_FLAGS) $(OUT_DIR)/$(TARGET)
