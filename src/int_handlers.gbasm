@@ -1,0 +1,23 @@
+include "hardware.inc"
+include "interrupts.inc"
+
+section "int_handlers", ROM0
+    vblank_int_handler::
+        set_last_interrupt IEB_VBLANK
+        ret
+
+    stat_int_handler::
+        set_last_interrupt IEB_STAT
+        ret
+
+    timer_int_handler::
+        set_last_interrupt IEB_TIMER
+        ret
+
+    serial_int_handler::
+        set_last_interrupt IEB_SERIAL
+        ret
+
+    joypad_int_handler::
+        set_last_interrupt IEB_HILO
+        ret

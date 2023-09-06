@@ -1,1 +1,17 @@
+include "hardware.inc"
+include "interrupts.inc"
 
+section "header", rom0[$100]
+    nop
+    jp startup
+
+section "startup", rom0[$150]
+startup:
+    ; setting enabled interrupts
+    ei
+    ld a, ENABLED_INTERRUPTS
+    ld [rIE], a
+
+main:
+    call gfx_wait_for_vblank
+    jr main

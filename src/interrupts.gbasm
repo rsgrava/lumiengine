@@ -1,0 +1,25 @@
+include "hardware.inc"
+include "interrupts.inc"
+
+section	"vblank_int", rom0[INT_HANDLER_VBLANK]
+	call vblank_int_handler
+	reti
+
+section	"stat_int", rom0[INT_HANDLER_STAT]
+	call stat_int_handler
+	reti
+
+section	"timer_int", rom0[INT_HANDLER_TIMER]
+	call timer_int_handler
+	reti
+
+section	"serial_int", rom0[INT_HANDLER_SERIAL]
+	call serial_int_handler
+	reti
+
+section	"joypad_int", rom0[INT_HANDLER_JOYPAD]
+	call joypad_int_handler
+	reti
+
+section "interrupt_variables", wram0
+	last_interrupt:: db
