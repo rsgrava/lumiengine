@@ -16,7 +16,7 @@ section "graphics", romx
     ;this is meant to get called every frame (ideally, call it from vblank interrupt handler)
     ;then if we want to change sprite attributes, we should write to the oam_data table in RAM
     gfx_oam_dma_transfer::
-        ld a, $C0          ; loading high byte of the oam table address in ram
+        ld a, HIGH(oam_data)          ; loading high byte of the oam table address in ram
         ldh [rDMA], a      ; starting DMA transfer
         ld a, 40           ; waiting until transfer finishes (160 cycles)
     .wait:
