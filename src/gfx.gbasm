@@ -43,5 +43,25 @@ section "graphics", romx
         ld [rHDMA5], a ; start dma
         ret
 
+    ; routine that changes a background palette
+    ; input:
+    ;   a: palette number
+    ;   hl: color start address
+    gfx_write_bgp::
+        sla a           ; multiply a by 8
+        sla a
+        sla a
+        set 7, a        ; set auto increment
+        ld [rBCPS], a   ; write palette start address
+        ld b, 4         ; set iteration count to 4
+    .loop:
+        ld a, [hli]     ; load lower byte of palette
+        ld [rBCPD], a   ; write lower byte of palette
+        ld a, [hli]     ; load upper byte of palette
+        ld [rBCPD], a   ; write upper byte of palette
+        dec b
+        jr nz, .loop
+        ret
+
 section "oam_data", wram0[$C000], align[8]
     oam_data:: ds $FF
