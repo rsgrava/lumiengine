@@ -1,7 +1,7 @@
 include "hardware.inc"
 include "interrupts.inc"
 
-section "graphics", romx
+section "graphics", rom0
 
     ; routine that waits until vblank happens to proceed
     ; meant to be called every frame
