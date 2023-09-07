@@ -7,7 +7,7 @@ ASSEMBLER = rgbasm
 LINKER = rgblink
 FIXER = rgbfix
 
-ASSEMBLER_FLAGS = -Wall -H -l -i $(INC_DIR)
+ASSEMBLER_FLAGS = -Wall -Wno-numeric-string -H -l -i $(INC_DIR)
 LINKER_FLAGS = 
 FIXER_FLAGS = -vC -i $(GAME_ID) -t $(TITLE) -k $(LICENSEE) -l 0x33 -n 0x00 -m 0x1B -r 0xFF -p 0xFF
 
