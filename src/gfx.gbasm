@@ -63,5 +63,25 @@ section "graphics", romx
         jr nz, .loop
         ret
 
+    ; routine that changes an object palette
+    ; input:
+    ;   a: palette number
+    ;   hl: color start address
+    gfx_write_obp::
+        sla a           ; multiply a by 8
+        sla a
+        sla a
+        set 7, a        ; set auto increment
+        ld [rOCPS], a   ; write palette start address
+        ld b, 4         ; set iteration count to 4
+    .loop:
+        ld a, [hli]     ; load lower byte of palette
+        ld [rOCPD], a   ; write lower byte of palette
+        ld a, [hli]     ; load upper byte of palette
+        ld [rOCPD], a   ; write upper byte of palette
+        dec b
+        jr nz, .loop
+        ret
+
 section "oam_data", wram0[$C000], align[8]
     oam_data:: ds $FF
