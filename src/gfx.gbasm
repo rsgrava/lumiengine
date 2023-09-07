@@ -15,7 +15,7 @@ section "graphics", romx
     ; routine that copies the sprite attribute table from RAM to VRAM
     ; this is meant to get called every frame (ideally, call it from vblank interrupt handler)
     ; then if we want to change sprite attributes, we should write to the oam_data table in RAM
-    gfx_oam_dma_transfer::
+    gfx_oam_dma::
         ld a, HIGH(oam_data)          ; loading high byte of the oam table address in ram
         ldh [rDMA], a                 ; starting DMA transfer
         ld a, 40                      ; waiting until transfer finishes (160 cycles)
@@ -30,7 +30,7 @@ section "graphics", romx
     ;   hl: src address
     ;   de: dst address
     ;   b: num of tiles to copy, from $00 to $7F (WARNING: do NOT set higher bit)
-    gfx_vram_dma::
+    gfx_hdma::
         ld a, h
         ld [rHDMA1], a ; load upper byte of src
         ld a, l
@@ -44,4 +44,4 @@ section "graphics", romx
         ret
 
 section "oam_data", wram0[$C000], align[8]
-    oam_data: ds $FF
+    oam_data:: ds $FF
