@@ -1,0 +1,33 @@
+include "hardware.inc"
+
+section "joypad", rom0
+
+    ; routine that reads joypad input
+    ; should be called once every frame
+    jp_read_input::
+        ld a, P1F_GET_DPAD     ; set register to dpad mode
+        ld [rP1], a
+        ld b, 16               ; set iteration count to 16
+        ; we need to waste a few (16) reads to wait for input stabilization
+    .loop1:
+        ld a, [rP1]            ; read directional input
+        dec b
+        jr nz, .loop1
+        xor a, $FF             ; invert bits
+        ld [jp_dir], a         ; write value to ram
+
+        ld a, P1F_GET_BTN      ; set register to btn mode
+        ld [rP1], a
+        ld b, 16               ; set iteration count to 16
+        ; we need to waste a few (16) reads to wait for input stabilization
+    .loop2:
+        ld a, [rP1]            ; read directional input
+        dec b
+        jr nz, .loop2
+        xor a, $FF             ; invert bits
+        ld [jp_action], a      ; write value to ram
+        ret
+
+section "joypad_data", wram0
+    jp_dir:: db
+    jp_action:: db
