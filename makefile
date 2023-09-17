@@ -6,6 +6,7 @@ TITLE = TEST # up to 16 chars
 ASSEMBLER = rgbasm
 LINKER = rgblink
 FIXER = rgbfix
+EMULATOR = sameboy
 
 ASSEMBLER_FLAGS = -Wall -Wno-numeric-string -H -l $(patsubst %,-i %, $(INC_DIR))
 LINKER_FLAGS = -n $(OUT_DIR)/$(TARGET).sym
@@ -21,7 +22,7 @@ SRC := $(wildcard $(SRC_DIR)/*.gbasm) $(wildcard $(SRC_DIR)/*/*.gbasm) $(wildcar
 OBJ := $(patsubst $(SRC_DIR)/%.gbasm, $(TEMP_DIR)/%.o, $(SRC))
 TEMP_DIR_TREE := $(dir $(OBJ))
 
-default: setup assemble link fix clean
+default: setup assemble link fix clean run
 
 setup:
 	mkdir -p $(TEMP_DIR_TREE)
@@ -40,3 +41,6 @@ fix:
 
 clean:
 	rm -rf $(TEMP_DIR)
+
+run:
+	$(EMULATOR) $(OUT_DIR)/$(TARGET).rom
