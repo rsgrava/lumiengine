@@ -1,5 +1,6 @@
 include "hardware.inc"
 include "interrupts.inc"
+include "joypad.inc"
 
 section "header", rom0[$100]
     nop
@@ -18,4 +19,6 @@ startup:
 
 main:
     call gfx_wait_for_vblank
+    call jp_read_input
+
     jr main
