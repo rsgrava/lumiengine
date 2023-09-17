@@ -12,6 +12,10 @@ startup:
     ld a, ENABLED_INTERRUPTS
     ld [rIE], a
 
+    ; turning LCD on
+    ld a, LCDCF_ON | LCDCF_OBJON | LCDCF_BGON ; LCD, sprites and background turned on
+    ld [rLCDC], a 
+
 main:
     call gfx_wait_for_vblank
     jr main
