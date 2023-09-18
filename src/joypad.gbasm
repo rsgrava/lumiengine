@@ -13,7 +13,7 @@ section "joypad", rom0
         ld a, [rP1]            ; read directional input
         dec b
         jr nz, .loop1
-        xor a, $FF             ; invert bits
+        cpl                    ; invert bits
         ld [jp_dir], a         ; write value to ram
 
         ld a, P1F_GET_BTN      ; set register to btn mode
@@ -24,7 +24,7 @@ section "joypad", rom0
         ld a, [rP1]            ; read directional input
         dec b
         jr nz, .loop2
-        xor a, $FF             ; invert bits
+        cpl                    ; invert bits
         ld [jp_action], a      ; write value to ram
         ret
 
