@@ -1,0 +1,20 @@
+section "mem", rom0
+
+	; input:
+	;	de: source address
+	;	hl: destination address
+	;	bc: byte count
+	mem_cp::
+		inc b
+		inc c
+		jr .dec
+	.loop:
+		ld a, [de]
+		inc de
+		ld [hli], a
+	.dec:
+		dec c
+		jr nz, .loop
+		dec b
+		jr nz, .loop
+		ret
