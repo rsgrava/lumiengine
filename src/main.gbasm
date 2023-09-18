@@ -5,6 +5,7 @@ include "joypad.inc"
 section "header", rom0[$100]
     nop
     jp startup
+    ds $150 - @
 
 section "startup", rom0[$150]
 startup:
@@ -20,5 +21,4 @@ startup:
 main:
     call gfx_wait_for_vblank
     call jp_read_input
-
     jr main
