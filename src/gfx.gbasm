@@ -52,7 +52,7 @@ section "graphics", rom0
         sla a
         sla a
         set 7, a        ; set auto increment
-        ld [rBCPS], a   ; write palette start address
+        ld [rBCPS], a   ; write palette start index
         ld b, 4         ; set iteration count to 4
     .loop:
         ld a, [hli]     ; load lower byte of palette
@@ -72,7 +72,7 @@ section "graphics", rom0
         sla a
         sla a
         set 7, a        ; set auto increment
-        ld [rOCPS], a   ; write palette start address
+        ld [rOCPS], a   ; write palette start index
         ld b, 4         ; set iteration count to 4
     .loop:
         ld a, [hli]     ; load lower byte of palette
@@ -82,6 +82,20 @@ section "graphics", rom0
         dec b
         jr nz, .loop
         ret
+
+    ; writes all 8 background palettes
+    ; input:
+    ;   hl: palette group start address
+    gfx_write_bgp_all::
+        ld a, $80       ; start at palette 0 with auto increment
+        ld [rBCPS], a   ; write palette start index
+        ld b, 64        ; set iteration count to 64
+    .loop:
+        ld a, [hli]     ; load byte of palette
+        ld [rBCPD], a   ; write byte of palette
+        dec b
+        jr nz, .loop
+        
 
 section "oam_data", wram0[$C000], align[8]
     oam_data:: ds $FF
