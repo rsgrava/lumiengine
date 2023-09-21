@@ -1,0 +1,90 @@
+include "mbc5.inc"
+include "mem.inc"
+
+section "map", rom0
+
+	; loads all data of a map, its corresponding tileset and palette from ROM to WRAM/VRAM
+	; WARNING: MUST be called with LCD OFF
+	; input:
+	;	hl: map table entry address
+	load_map::
+		; general map data
+		ld a, [hli]						; read width
+		ld [map_width], a
+		ld a, [hli]						; read height
+		ld [map_height], a
+		ld a, [hli]						; read lower byte of area
+		ld c, a
+		ld a, [hli]						; read upper byte of area
+		ld b, a
+		
+		; map tiles
+		ld a, [hli]						; read lower byte of bank
+		ld e, a
+		ld a, [hli]						; read upper byte of bank
+		mbc5_set_rom_bank
+		ld a, [hli]						; read lower byte of address
+		ld e, a
+		ld a, [hli]						; read upper byte of address
+		ld d, a
+		push hl
+		push bc
+		mem_set_wram_bank_const bank("map_tiles")
+		ld hl, startof("map_tiles")
+		call mem_cp						; copy from rom to ram
+		pop bc
+		pop hl
+
+		; map attribs
+		ld a, [hli]						; read lower byte of bank
+		ld e, a
+		ld a, [hli]						; read upper byte of bank
+		mbc5_set_rom_bank
+		ld a, [hli]						; read lower byte of address
+		ld e, a
+		ld a, [hli]						; read upper byte of address
+		ld d, a
+		push hl
+		mem_set_wram_bank_const bank("map_attribs")
+		ld hl, startof("map_attribs")
+		call mem_cp						; copy from rom to ram
+		pop hl
+
+		; tileset
+		ld a, [hli]						; read lower byte of bank
+		ld e, a
+		ld a, [hli]						; read upper byte of bank
+		mbc5_set_rom_bank
+		ld a, [hli]						; read lower byte of address
+		ld e, a
+		ld a, [hli]						; read upper byte of address
+		ld d, a
+		ld a, [hli]						; read number of tiles to copy to bank 0 0-127
+		ld b, a
+		ld a, [hli]						; read number of tiles to copy to bank 0 128-255
+		ld c, a
+		ld a, [hli]						; read number of tiles to copy to bank 0-127
+		push hl
+		call load_tileset
+		pop hl
+
+		; bg palettes
+		ld a, [hli]						; read lower byte of bank
+		ld e, a
+		ld a, [hli]						; read upper byte of bank
+		mbc5_set_rom_bank
+		ld a, [hli]						; read lower byte of address
+		ld h, [hl]						; read upper byte of address
+		ld l, a
+		call gfx_write_bgp_all
+		ret
+	
+section "map_data", wram0
+map_width:: db
+map_height:: db
+
+section "map_tiles", wramx
+	ds $1000
+
+section "map_attribs", wramx
+	ds $1000
