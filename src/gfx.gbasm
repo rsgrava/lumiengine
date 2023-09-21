@@ -96,6 +96,17 @@ section "graphics", rom0
         dec b
         jr nz, .loop
         ret
+    
+    ; wipes the OAM data with zeroes
+    gfx_clear_obj::
+        ld a, 0                     ; load a with 0
+        ld b, $FF                   ; load b with $FF iterations
+        ld hl, startof("oam_data")    ; load hl with oam data starting address
+    .loop:
+        ld [hli], a
+        dec b
+        jr nz, .loop
+        ret
 
 section "oam_data", wram0[$C000], align[8]
     oam_data:: ds $FF
