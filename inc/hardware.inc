@@ -1101,5 +1101,10 @@ DEF LCDCF_BG8800  EQU %00000000 ; BG & Window Tile Data Select
 DEF LCDCF_BG8000  EQU %00010000 ; BG & Window Tile Data Select
 DEF LCDCB_BG8000  EQU 4 ; BG & Window Tile Data Select
 
+; Custom constants by Serpens
+
+DEF TILE_DATA0 EQU _VRAM
+DEF TILE_DATA1 EQU _VRAM+$800
+DEF TILE_DATA2 EQU _VRAM+$1000
 
     ENDC ;HARDWARE_INC
