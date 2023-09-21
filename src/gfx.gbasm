@@ -95,7 +95,7 @@ section "graphics", rom0
         ld [rBCPD], a   ; write byte of palette
         dec b
         jr nz, .loop
-        
+        ret
 
 section "oam_data", wram0[$C000], align[8]
     oam_data:: ds $FF
