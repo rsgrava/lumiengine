@@ -1,0 +1,41 @@
+include "hardware.inc"
+
+section "tileset", rom0
+
+	; loads a tileset 
+	; input:
+	;	de: tileset start address
+	;	b: number of tiles to load to bank 0 0-127
+	;	c: number of tiles to load to bank 0 128-255
+	;	a: number of tiles to load to bank 1 0-127
+	load_tileset::
+		; copying bank 0 0-127
+		push af						; store num tiles bank 1 0-127
+		dec b						; decrement b so it's in range $00-$7F
+		ld l, e						; load source address into hl
+		ld h, d
+		ld de, TILE_DATA2			; load address for bank 0 0-127
+		call gfx_hdma
+
+		; copying bank 0 128-255
+		ld b, c						; load tile count into b
+		inc b						; check if num of tiles for bank 0 128-255 is 0
+		dec b						; end copying if it is
+		jr z, .end_early
+		dec b						; decrement b so it's in range $00-$7F
+		ld de, TILE_DATA1			; load address for bank0 128-255 and bank 1 0-127
+		call gfx_hdma
+
+		; copying bank 1 0-127
+		pop bc						; restore num tiles bank 1 0-127, loading tile count to b
+		inc b						; check if num of tiles for bank 1 0-127 is 0
+		dec b						; end copying if it is
+		ret z
+		dec b						; decrement b so it's in range $00-$7F
+		call gfx_hdma
+
+		ret
+		
+	.end_early:
+		pop bc
+		ret
