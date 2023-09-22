@@ -1,6 +1,6 @@
 include "hardware.inc"
 
-macro jp_isPressed
+macro jp_isDown
     if \1 == "up"
         ld a, [jp_dir]
         ld b, P1F_2
