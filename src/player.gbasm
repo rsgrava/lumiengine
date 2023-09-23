@@ -1,0 +1,68 @@
+include "joypad.inc"
+
+def PLAYER_SPEED equ 1.0
+
+section "player", rom0
+	player_init::
+		ld a, 0
+		ld hl, player_x
+		ld [hli], a
+		ld [hli], a
+		ld [hli], a
+		ld [hl], a
+		ret
+
+	player_update::
+		ld hl, player_y					; load player_y from memory
+		ld a, [hli]
+		ld h, [hl]
+		ld l, a
+
+		jp_isDown "up"					; check if 
+		jr z, .down
+		ld de, -PLAYER_SPEED
+		jr .update_y
+
+	.down:
+		jp_isDown "down"
+		jr z, .check_x
+		ld de, PLAYER_SPEED
+
+	.update_y:
+		add hl, de
+		ld a, l
+		ld [player_y], a
+		ld a, h
+		ld [player_y + $01], a
+		call cam_set_y
+
+	.check_x:
+		ld hl, player_x					; load player_x from memory
+		ld a, [hli]
+		ld h, [hl]
+		ld l, a
+
+		jp_isDown "left"
+		jr z, .right
+		ld de, -PLAYER_SPEED
+		jr .update_x
+
+	.right:
+		jp_isDown "right"
+		jr z, .end_dir
+		ld de, PLAYER_SPEED
+
+	.update_x:
+		add hl, de
+		ld a, l
+		ld [player_x], a
+		ld a, h
+		ld [player_x + $01], a
+		call cam_set_x
+
+	.end_dir:
+		ret
+
+section "player_data", wram0
+player_x:: ds 2
+player_y:: ds 2
