@@ -24,3 +24,8 @@ endm
 macro mbc5_set_ram_bank
 	ld [rRAMB], a
 endm
+
+macro mbc5_set_ram_bank_const
+	ld a, \1
+	ld [rRAMB], a
+endm
