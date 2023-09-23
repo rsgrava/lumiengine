@@ -1,0 +1,37 @@
+include "lcd.inc"
+
+section "camera", rom0
+	; sets cam x to an (unsigned) value
+	; hl: value
+	cam_set_x::
+		ld de, cam_x
+		call store_and_get_scroll
+		lcd_set_scx
+		ret
+	
+	; sets cam y to an (unsigned) value
+	; hl: value
+	cam_set_y::
+		ld de, cam_y
+		call store_and_get_scroll
+		lcd_set_scy
+		ret
+	
+	store_and_get_scroll:
+		ld a, l
+		ld [de], a			; store lower byte
+		inc de
+		ld a, h
+		ld [de], a			; store upper byte
+		rl l				; getting scroll
+		rla					; a = ___sssss l = sss_____
+		rl l				; after rotating thrice: a = ssssssss
+		rla
+		rl l
+		rla
+		ret
+
+section "camera_data", wram0
+cam_pos::
+cam_x:: ds 2
+cam_y:: ds 2
