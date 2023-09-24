@@ -7,7 +7,7 @@ section "map", rom0
 	; WARNING: MUST be called with LCD OFF
 	; input:
 	;	hl: map table entry address
-	load_map::
+	map_load::
 		; general map data
 		ld a, [hli]						; read width
 		ld [map_width], a
@@ -29,8 +29,8 @@ section "map", rom0
 		ld d, a
 		push hl
 		push bc
-		mem_set_wram_bank_const bank("map_tiles")
-		ld hl, startof("map_tiles")
+		mem_set_wram_bank_const bank("map_tiles_0")
+		ld hl, startof("map_tiles_0")
 		call mem_cp						; copy from rom to ram
 		pop bc
 		pop hl
@@ -45,8 +45,8 @@ section "map", rom0
 		ld a, [hli]						; read upper byte of address
 		ld d, a
 		push hl
-		mem_set_wram_bank_const bank("map_attribs")
-		ld hl, startof("map_attribs")
+		mem_set_wram_bank_const bank("map_attribs_0")
+		ld hl, startof("map_attribs_0")
 		call mem_cp						; copy from rom to ram
 		pop hl
 
@@ -79,12 +79,152 @@ section "map", rom0
 		call gfx_write_bgp_all
 		ret
 	
+	; draws the viewport's background
+	map_draw_screen::
+		ld hl, cam_pos				; loading current camera position
+
+		; loading SRAM starting address in de
+		ld a, [hli]					; read x lower byte, discard
+		ld a, [hli]					; read x upper byte, keep (it's tile_x)
+		ld e, a						; store tile_x in e
+		ld a, [hli]					; read y lower byte, discard
+		ld a, [hl]					; read y upper byte, keep (it's tile_y)
+		ld h, e						; store tile_x in h
+		ld l, a						; store tile_y in l
+		rra							; pop y bit from the right (a = 000y_yyyy)
+		jr nc, .skip				; if bit 0 was popped, continue (e = yxxx_xxxx)
+		set 7, e					; if bit 1 was popped, set (e = yxxx_xxxx)
+	.skip:
+		or $A0						; ORs SRAM base address to a (a = 101y_yyyy)
+		ld d, a						; finished loading address to de (de = 101y_yyyy_yxxx_xxxx)
+
+		; loading VRAM starting address in hl
+		; l is currently tile_y (l = 0yyy_yyyy)
+		; h is currently tile_x (h = 0xxx_xxxx)
+		ld a, h						; a = 0xxx_xxxx
+		rla							; a = xxxx_xxx0
+		rla							; a = xxxx_xx00
+		rla							; a = xxxx_x000
+		rla							; a = xxxx_0000, c = x
+		rl l						; l = yyyy_yyyx
+		rla							; a = xxx0_0000, c = x
+		rl l						; l = yyyy_yyxx
+		rla							; a = xx00_0000, c = x
+		rl l						; l = yyyy_yxxx
+		rla							; a = x000_0000, c = x
+		rl l						; l = yyyy_xxxx, c = y
+		rl h						; h = xxxx_xxxy
+		rla							; a = 0000_0000, c = x
+		rl l						; l = yyyx_xxxx, c = y
+		rl h						; h = xxxx_xxyy
+		ld a, h						; a = xxxx_xxyy
+		and $03						; a = 0000_00yy
+		or $98						; a = 1001_10yy
+		ld h, a						; finished loading hl (hl = 1001_10yy_yyyx_xxxx)
+
+		; copying row by row to VRAM from SRAM 0
+		mbc5_enable_ram
+		ld c, 16					; iterating over y
+	.outer_loop_1:
+		ld b, 20					; iterating over x
+	.inner_loop_1:
+		res 2, h					; keep resetting this bit in case screen wrapped vertically
+		mem_set_vram_bank_const 0
+		mbc5_set_ram_bank_const bank("map_tiles_0")
+		ld a, [de]					; load tile from SRAM
+		ld [hl], a					; store tile in VRAM
+		mem_set_vram_bank_const 1
+		mbc5_set_ram_bank_const bank("map_attribs_0")
+		ld a, [de]					; load attrib from SRAM
+		ld [hli], a					; store attrib in VRAM and increment VRAM addr
+		ld a, l						; a = yyyx_xxxx
+		and $1F						; a = 000x_xxxx
+		jr nz, .continue_1			; if x_xxxx == 0 then vram changed lines
+		dec hl 						; in that case go up a line to just wrap around x
+		ld a, l						; a = yyyx_xxxx
+		and $E0						; a = yyy0_0000
+		ld l, a						; l = yyy0_0000
+	.continue_1:
+		inc de						; increment SRAM addr
+		bit 5, d					; check if tile_y > 64
+		jr 	z, .second_bank_loop	; if it is, start pulling from second bank
+		dec b
+		jr nz, .inner_loop_1
+		push de
+		ld a, l						; a = yyyx_xxxx
+		and $1F						; a = 000x_xxxx
+		cp 20						; check if x is wrapping around
+		jr nc, .dont_advance_1		; if it's did, advance a line, if not don't
+		ld de, 32 + 32 - 20			; return to starting x and advance one line
+		jr .do_add_1
+	.dont_advance_1:
+		ld de, 32 - 20				; return to starting x for next line
+	.do_add_1:
+		add hl, de
+		pop de
+		dec c
+		jr nz, .outer_loop_1
+		mbc5_disable_ram
+		ret
+
+		; copying row by row to VRAM from SRAM 1
+	.second_bank_loop:
+		ld a, $a0					; loading first address of second bank
+		ld d, a						; d = 1010_0000
+		jr .start_second_loop
+	.outer_loop_2:
+		ld b, 20					; iterating over x
+	.inner_loop_2:
+		res 2, h					; keep resetting this bit in case screen wrapped vertically
+		mem_set_vram_bank_const 0
+		mbc5_set_ram_bank_const bank("map_tiles_1")
+		ld a, [de]					; load tile from SRAM
+		ld [hl], a					; store tile in VRAM
+		mem_set_vram_bank_const 1
+		mbc5_set_ram_bank_const bank("map_attribs_1")
+		ld a, [de]					; load attrib from SRAM
+		ld [hli], a					; store attrib in VRAM and increment VRAM addr
+		ld a, l						; a = yyyx_xxxx
+		and $1F						; a = 000x_xxxx
+		jr nz, .continue_2			; if x_xxxx == 0 then vram changed lines
+		dec hl 						; in that case go up a line to just wrap around x
+		ld a, l						; a = yyyx_xxxx
+		and $E0						; a = yyy0_0000
+		ld l, a						; l = yyy0_0000
+	.continue_2:
+		inc de						; increment SRAM addr
+	.start_second_loop:
+		dec b
+		jr nz, .inner_loop_2
+		push de
+		ld a, l						; a = yyyx_xxxx
+		and $1F						; a = 000x_xxxx
+		cp 20						; check if x is wrapping around
+		jr nc, .dont_advance_2		; if it's did, advance a line, if not don't
+		ld de, 32 + 32 - 20			; return to starting x and advance one line
+		jr .do_add_2
+	.dont_advance_2:
+		ld de, 32 - 20
+	.do_add_2:
+		add hl, de
+		pop de
+		dec c
+		jr nz, .outer_loop_2
+		mbc5_disable_ram
+		ret
+	
 section "map_data", wram0
 map_width:: db
 map_height:: db
 
-section "map_tiles", wramx
-	ds $1000
+section "map_tiles_0", sram
+	ds $2000
 
-section "map_attribs", wramx
-	ds $1000
+section "map_tiles_1", sram
+	ds $2000
+
+section "map_attribs_0", sram
+	ds $2000
+
+section "map_attribs_1", sram
+	ds $2000
