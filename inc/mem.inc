@@ -22,5 +22,6 @@ endm
 ; input:
 ;	\1: bank id
 macro mem_set_vram_bank_const
+	ld a, \1
 	ld [rVBK], a
 endm
