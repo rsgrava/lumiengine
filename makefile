@@ -10,7 +10,7 @@ EMULATOR = sameboy
 
 ASSEMBLER_FLAGS = -Wall -Wno-numeric-string -H -l $(patsubst %,-i %, $(INC_DIR)) -Q 5
 LINKER_FLAGS = -n $(OUT_DIR)/$(TARGET).sym -m $(OUT_DIR)/$(TARGET).map
-FIXER_FLAGS = -vC -i $(GAME_ID) -t $(TITLE) -k $(LICENSEE) -l 0x33 -n 0x00 -m 0x1B -r 0xFF -p 0xFF
+FIXER_FLAGS = -vC -i $(GAME_ID) -t $(TITLE) -k $(LICENSEE) -l 0x33 -n 0x00 -m 0x1B -r 0x04 -p 0xFF
 
 SRC_DIR = ./src
 INC_DIR = ./inc ./data/inc ./data/bin
