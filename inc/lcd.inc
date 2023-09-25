@@ -31,3 +31,33 @@ macro lcd_offset_scy
 	add a, b
 	ld [rSCY], a
 endm
+
+; sets window x register
+; input:
+;	a: x value
+macro lcd_set_wx
+	ld [rWX], a
+endm
+
+; sets window y register
+; input:
+;	a: y value
+macro lcd_set_wy
+	ld [rWY], a
+endm
+
+; sets window x register
+; input:
+;	\1: x value
+macro lcd_set_wx_const
+	ld a, \1
+	lcd_set_wx
+endm
+
+; sets window y register
+; input:
+;	\1: y value
+macro lcd_set_wy_const
+	ld a, \1
+	lcd_set_wy
+endm
