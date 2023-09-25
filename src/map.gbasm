@@ -29,7 +29,8 @@ section "map", rom0
 		ld d, a
 		push hl
 		push bc
-		mem_set_wram_bank_const bank("map_tiles_0")
+		mbc5_enable_ram
+		mbc5_set_ram_bank_const bank("map_tiles_0")
 		ld hl, startof("map_tiles_0")
 		call mem_cp						; copy from rom to ram
 		pop bc
@@ -45,9 +46,10 @@ section "map", rom0
 		ld a, [hli]						; read upper byte of address
 		ld d, a
 		push hl
-		mem_set_wram_bank_const bank("map_attribs_0")
+		mbc5_set_ram_bank_const bank("map_attribs_0")
 		ld hl, startof("map_attribs_0")
 		call mem_cp						; copy from rom to ram
+		mbc5_disable_ram
 		pop hl
 
 		; tileset
